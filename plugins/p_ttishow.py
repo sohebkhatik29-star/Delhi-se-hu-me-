@@ -17,12 +17,12 @@ from bot import botStartTime
 
 @Client.on_message(filters.new_chat_members & filters.group)
 async def save_group(bot, message):
-    dreamx_check = [u.id for u in message.new_chat_members]
-    if temp.ME in dreamx_check:
+    ash_check = [u.id for u in message.new_chat_members]
+    if temp.ME in ash_check:
         if not await db.get_chat(message.chat.id):
             total=await bot.get_chat_members_count(message.chat.id)
-            dreamx_botz = message.from_user.mention if message.from_user else "Anonymous" 
-            await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_G.format(message.chat.title, message.chat.id, total, dreamx_botz))       
+            ash_botz = message.from_user.mention if message.from_user else "Anonymous" 
+            await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_G.format(message.chat.title, message.chat.id, total, ash_botz))       
             await db.add_chat(message.chat.id, message.chat.title)
         if message.chat.id in temp.BANNED_CHATS:
 

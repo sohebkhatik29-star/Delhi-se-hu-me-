@@ -35,7 +35,7 @@ logging.getLogger("pymongo").setLevel(logging.WARNING)
 
 botStartTime = time.time()
 
-def dreamxbotz_plugins_handler(app, plugins_dir: str | Path = "plugins", package_name: str = "plugins") -> list[str]:
+def ashbotz_plugins_handler(app, plugins_dir: str | Path = "plugins", package_name: str = "plugins") -> list[str]:
     plugins_dir = Path(plugins_dir)
     loaded_plugins: list[str] = []
 
@@ -82,13 +82,13 @@ def dreamxbotz_plugins_handler(app, plugins_dir: str | Path = "plugins", package
 
     return loaded_plugins
 
-async def dreamxbotz_start():
+async def ashbotz_start():
     print('\n\nInitalizing ashbotz')
     await ashbotz.start()
     bot_info = await ashbotz.get_me()
     ashbotz.username = bot_info.username
     await initialize_clients()
-    loaded_plugins = dreamxbotz_plugins_handler(ashbotz)
+    loaded_plugins = ashbotz_plugins_handler(ashbotz)
     if loaded_plugins:
         logging.info("✅ Plugins Loaded: %d", len(loaded_plugins))
     else:
@@ -131,7 +131,7 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     while True:
         try:
-            loop.run_until_complete(dreamxbotz_start())
+            loop.run_until_complete(ashbotz_start())
             break  
         except FloodWait as e:
             print(f"FloodWait! Sleeping for {e.value} seconds.")

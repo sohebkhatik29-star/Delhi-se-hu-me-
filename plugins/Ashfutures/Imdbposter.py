@@ -4,7 +4,7 @@ import warnings
 import logging
 from io import BytesIO
 from PIL import Image
-from info import DREAMXBOTZ_IMAGE_FETCH, TMDB_API_KEY
+from info import ASHBOTZ_IMAGE_FETCH, TMDB_API_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ async def get_session():
     return _session
 
 async def fetch_image(url, size=(860, 1200)):
-    if not DREAMXBOTZ_IMAGE_FETCH:
+    if not ASHBOTZ_IMAGE_FETCH:
         return url
 
     try:

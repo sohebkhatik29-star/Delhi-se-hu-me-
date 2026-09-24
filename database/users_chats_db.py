@@ -181,7 +181,7 @@ class Database:
         else:
             return default.copy()
 
-    async def dreamx_reset_settings(self):
+    async def ash_reset_settings(self):
         try:
             result = await self.grp.update_many(
                 {'settings': {'$exists': True}}, 
