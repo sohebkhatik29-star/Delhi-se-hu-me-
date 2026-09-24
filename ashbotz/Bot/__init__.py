@@ -21,7 +21,7 @@ from pyrogram import Client
 from info import *
 
 
-class dreamcinezoneXBot(Client):
+class AshMovieBot(Client):
 
     def __init__(self):
         super().__init__(
@@ -72,7 +72,7 @@ class dreamcinezoneXBot(Client):
                 yield message
                 current += 1
       
-dreamxbotz = dreamcinezoneXBot()
+ashbotz = AshMovieBot()
 
 multi_clients = {}
 work_loads = {}

@@ -1,4 +1,4 @@
-#Thanks @dreamxBotz for helping in this journey 
+#Thanks @ashbotz for helping in this journey 
 from os import environ
 from typing import Dict, Optional
 
