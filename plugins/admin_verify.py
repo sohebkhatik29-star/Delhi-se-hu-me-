@@ -929,10 +929,24 @@ async def verify_settings_interactive_listener(client: Client, message: Message)
             message.continue_propagation()
             return
 
-    # 1. Fetch state from memory or MongoDB
+    # 1. Fetch state from memory or MongoDB (with 120s expiration check)
     state = AWAITING_INPUT.get(user_id)
     if not state:
-        state = await db.get_admin_verify_state(user_id)
+        db_state = await db.get_admin_verify_state(user_id)
+        if db_state:
+            updated_at = db_state.get('updated_at')
+            # If state is older than 120 seconds, treat as expired and delete
+            import datetime as _dt
+            if updated_at and isinstance(updated_at, _dt.datetime):
+                age = (_dt.datetime.utcnow() - updated_at).total_seconds()
+                if age > 120:
+                    await db.clear_admin_verify_state(user_id)
+                    db_state = None
+            else:
+                # If no timestamp, clear it
+                await db.clear_admin_verify_state(user_id)
+                db_state = None
+        state = db_state
 
     raw_text = (message.text or "").strip()
     parts = raw_text.split()

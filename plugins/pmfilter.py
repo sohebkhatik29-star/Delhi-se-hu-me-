@@ -84,13 +84,13 @@ async def pm_text(bot, message):
     user_id = message.from_user.id
     try:
         from plugins.admin_verify import AWAITING_INPUT as V_AWAITING
-        if user_id in V_AWAITING or (await db.get_admin_verify_state(user_id)):
+        if user_id in V_AWAITING:
             return
     except Exception:
         pass
     try:
         from plugins.dump_manager import ADMIN_DUMP_STATE
-        if user_id in ADMIN_DUMP_STATE or (await db.get_admin_dump_state(user_id)):
+        if user_id in ADMIN_DUMP_STATE:
             return
     except Exception:
         pass

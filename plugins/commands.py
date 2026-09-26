@@ -152,6 +152,15 @@ async def start(client, message):
                 await client.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(message.from_user.id, message.from_user.mention))
             except Exception as le:
                 logger.warning(f"Log channel error: {le}")
+        # Clear any stale admin states on fresh /start
+        try:
+            from plugins.admin_verify import AWAITING_INPUT as V_AWAITING
+            V_AWAITING.pop(message.from_user.id, None)
+            await db.clear_admin_verify_state(message.from_user.id)
+            await db.clear_admin_dump_state(message.from_user.id)
+        except Exception:
+            pass
+
         if len(message.command) != 2:
             buttons = get_start_buttons(message.from_user.id)
             reply_markup = InlineKeyboardMarkup(buttons)
