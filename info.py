@@ -270,10 +270,10 @@ Bot_cmds = {
 
 #Don't Change Anything Here
 if MULTIPLE_DB == False:
-DATABASE_URI = environ.get('DATABASE_URI', 'mongodb+srv://sohebkhataik25:ash980@cluster0.ewksnis.mongodb.net/?appName=Cluster0')
+    DATABASE_URI = DATABASE_URI
     DATABASE_URI2 = DATABASE_URI
 else:
-DATABASE_URI = environ.get('DATABASE_URI', 'mongodb+srv://sohebkhataik25:ash980@cluster0.ewksnis.mongodb.net/?appName=Cluster0')
+    DATABASE_URI = DATABASE_URI
     DATABASE_URI2 = DATABASE_URI2
 
 # ============================
