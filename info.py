@@ -18,9 +18,9 @@ def is_enabled(value, default):
 # Bot Information Configuration
 # ============================
 SESSION = environ.get('SESSION', 'movies_1780')   # Session name for the bot
-API_ID = int(environ.get('API_ID', '30720676')) # API ID from my.telegram.org
-API_HASH = environ.get('API_HASH', 'a078e3476750afbd6db7d6c5e5e658d9')  # API Hash from my.telegram.org
-BOT_TOKEN = environ.get('BOT_TOKEN', '8371494394:AAFf0gLu2_oXs6MhQGTe_CEsCnAWxH9R0uA')    # Bot token from @BotFather
+API_ID = int(environ.get('API_ID', '6484563'))
+API_HASH = environ.get('API_HASH', '7f6d6a93690a26c3200b43ef3dd7c31c')
+BOT_TOKEN = environ.get('BOT_TOKEN', '8482368787:AAHCXjWMJUNhQuUrr6mZsk1bD3_0RrpjQhU')
 
 # ============================
 # Bot Settings Configuration
@@ -44,11 +44,11 @@ FSUB_PICS = (environ.get('FSUB_PICS', 'https://graph.org/file/7478ff3eac37f4329c
 # ============================
 # Admin, Channels & Users Configuration
 # ============================
-ADMINS = [int(admin) if id_pattern.search(admin) else admin for admin in environ.get('ADMINS', '5566977478').split()] # Replace with the actual admin ID(s) to add
+ADMINS = [int(admin) if id_pattern.search(admin) else admin for admin in environ.get('ADMINS', '1685453419').split()]
 INITIAL_ADMINS = list(ADMINS)  # Permanent env admins
-CHANNELS = [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('CHANNELS', '-1003450954446').split()]  # Channel id for auto indexing (make sure bot is admin)
+CHANNELS = [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('CHANNELS', '-1002975880920').split()]
 
-LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1003635190475'))  # Log channel id (make sure bot is admin)
+LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1003643537584'))
 BIN_CHANNEL = int(environ.get('BIN_CHANNEL', '-100'))  # Bin channel id (make sure bot is admin)
 PREMIUM_LOGS = int(environ.get('PREMIUM_LOGS', '-100'))  # Premium logs channel id
 DELETE_CHANNELS = [int(dch) if id_pattern.search(dch) else dch for dch in environ.get('DELETE_CHANNELS', '-100').split()] #(make sure bot is admin)
@@ -57,8 +57,8 @@ reqst_channel = environ.get('REQST_CHANNEL_ID', '-1003635190475')  # Request cha
 SUPPORT_CHAT = environ.get('SUPPORT_CHAT', 'https://t.me/+5Ev6MbE3WSM3YmM1')  # Support group link (make sure bot is admin)
 
 # FORCE_SUB 
-auth_req_channels = environ.get("AUTH_REQ_CHANNELS", "-1002196570573")# requst to join Channel for force sub (make sure bot is admin) only for bot ADMINS  
-auth_channels     = environ.get("AUTH_CHANNELS", "-100")# Channels for force sub (make sure bot is admin)
+auth_req_channels = environ.get('AUTH_REQ_CHANNELS', '-1003284792393')
+auth_channels = environ.get('AUTH_CHANNELS', '-1003284792393')
 
 # ============================
 # Payment Configuration
@@ -77,8 +77,8 @@ STAR_PREMIUM_PLANS = {
 # ============================
 # MongoDB Configuration
 # ============================
-DATABASE_URI = environ.get('DATABASE_URI', "mongodb+srv://sohebkhataik25:ash980@cluster0.ewksnis.mongodb.net/?appName=Cluster0")  # MongoDB URI for the database
-DATABASE_NAME = environ.get('DATABASE_NAME', "-1004411740166") # Database name (default: cluster)
+DATABASE_URI = environ.get('DATABASE_URI', 'mongodb+srv://sohebkhataik25:ash980@cluster0.ewksnis.mongodb.net/?appName=Cluster0')
+DATABASE_NAME = environ.get('DATABASE_NAME', 'ash')
 COLLECTION_NAME = environ.get('COLLECTION_NAME', 'dreamcinezone_files') # Collection name (default: dreamcinezone_files)
 
 # If MULTIPLE_DB Is True Then Fill DATABASE_URI2 Value Else You Will Get Error.
@@ -270,10 +270,10 @@ Bot_cmds = {
 
 #Don't Change Anything Here
 if MULTIPLE_DB == False:
-    DATABASE_URI = DATABASE_URI
+DATABASE_URI = environ.get('DATABASE_URI', 'mongodb+srv://sohebkhataik25:ash980@cluster0.ewksnis.mongodb.net/?appName=Cluster0')
     DATABASE_URI2 = DATABASE_URI
 else:
-    DATABASE_URI = DATABASE_URI
+DATABASE_URI = environ.get('DATABASE_URI', 'mongodb+srv://sohebkhataik25:ash980@cluster0.ewksnis.mongodb.net/?appName=Cluster0')
     DATABASE_URI2 = DATABASE_URI2
 
 # ============================
