@@ -1,3 +1,4 @@
+import string
 from utils import get_random_mix_id, get_size, is_subscribed, is_req_subscribed, group_setting_buttons, get_poster, get_posterx, temp, get_settings, save_group_settings, get_cap, imdb, is_check_admin, extract_request_content, log_error, clean_filename, generate_season_variations, clean_search_text, get_all_fsub_channels_list, get_start_display_details
 import tracemalloc
 from fuzzywuzzy import process
@@ -913,7 +914,119 @@ async def cb_handler(client: Client, query: CallbackQuery):
         user = query.message.reply_to_message.from_user.id if query.message.reply_to_message else query.from_user.id
         if int(user) != 0 and query.from_user.id != int(user):
             return await query.answer(script.ALRT_TXT.format(query.from_user.first_name), show_alert=True)
-        await query.answer(url=f"https://t.me/{temp.U_NAME}?start=file_{query.message.chat.id}_{file_id}")
+        
+        if query.message.chat.type == enums.ChatType.PRIVATE:
+            await query.answer("Fetching file... ⏳")
+            user_id = query.from_user.id
+            chat_id = query.message.chat.id
+            
+            # 1. FSub Check
+            if not await db.has_premium_access(user_id):
+                try:
+                    btn = []
+                    settings = await get_settings(chat_id)
+                    grp_fsub = settings.get('fsub', []) if settings else []
+                    fsub_channels, _ = await get_all_fsub_channels_list(grp_fsub)
+                    if fsub_channels:
+                        btn += await is_subscribed(client, user_id, fsub_channels)
+                    if AUTH_REQ_CHANNELS:
+                        btn += await is_req_subscribed(client, user_id, AUTH_REQ_CHANNELS)
+                    if btn:
+                        btn.append([InlineKeyboardButton("♻️ ᴛʀʏ ᴀɢᴀɪɴ ♻️", callback_data=f"checksub#file#{chat_id}_{file_id}")])
+                        user_obj = await client.get_users(user_id)
+                        photo, caption = await get_fsub_display_details(user_obj)
+                        return await query.message.reply_photo(
+                            photo=photo,
+                            caption=caption,
+                            reply_markup=InlineKeyboardMarkup(btn),
+                            parse_mode=enums.ParseMode.HTML
+                        )
+                except Exception as e:
+                    logger.error(f"Fsub check error: {e}")
+
+            # 2. Verification Check
+            if not await db.has_premium_access(user_id):
+                try:
+                    settings = await get_settings(chat_id)
+                    v1_cfg = await db.get_verify_step_config(1)
+                    v2_cfg = await db.get_verify_step_config(2)
+                    v3_cfg = await db.get_verify_step_config(3)
+                    time_gap_2 = v2_cfg.get('time', settings.get('verify_time', TWO_VERIFY_GAP))
+                    time_gap_3 = v3_cfg.get('time', settings.get('third_verify_time', THREE_VERIFY_GAP))
+                    user_verified = await db.is_user_verified(user_id)
+                    is_second_shortener = await db.use_second_shortener(user_id, time_gap_2) and v2_cfg.get('is_active', True)
+                    is_third_shortener = await db.use_third_shortener(user_id, time_gap_3) and v3_cfg.get('is_active', True)
+                    step_1_needed = not user_verified and v1_cfg.get('is_active', True)
+
+                    if (settings.get("is_verify", IS_VERIFY) or v1_cfg.get('is_active', True)) and (step_1_needed or is_second_shortener or is_third_shortener):
+                        verify_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=7))
+                        await db.create_verify_id(user_id, verify_id)
+                        temp.VERIFICATIONS[user_id] = chat_id
+                        verify = await get_shortlink(f"https://telegram.me/{temp.U_NAME}?start=notcopy_{user_id}_{verify_id}_{file_id}", chat_id, is_second_shortener, is_third_shortener)
+                        
+                        if is_third_shortener:
+                            howtodownload = v3_cfg.get('tutorial') or settings.get('tutorial_3', TUTORIAL_3)
+                            active_cfg = v3_cfg
+                        elif is_second_shortener:
+                            howtodownload = v2_cfg.get('tutorial') or settings.get('tutorial_2', TUTORIAL_2)
+                            active_cfg = v2_cfg
+                        else:
+                            howtodownload = v1_cfg.get('tutorial') or settings.get('tutorial', TUTORIAL)
+                            active_cfg = v1_cfg
+
+                        buttons = [
+                            [InlineKeyboardButton(text="♻️ ᴄʟɪᴄᴋ ʜᴇʀᴇ ᴛᴏ ᴠᴇʀɪꜰʏ ♻️", url=verify)],
+                            [InlineKeyboardButton(text="⁉️ ʜᴏᴡ ᴛᴏ ᴠᴇʀɪꜰʏ ⁉️", url=howtodownload)],
+                            [InlineKeyboardButton("🤩 BUY PREMIUM - NO NEED TO VERIFY 🤩", callback_data="premium_info")]
+                        ]
+                        msg_template = active_cfg.get('text') or script.VERIFICATION_TEXT
+                        formatted_msg = msg_template.format(query.from_user.mention)
+                        n = await query.message.reply_text(text=formatted_msg, protect_content=True, reply_markup=InlineKeyboardMarkup(buttons), parse_mode=enums.ParseMode.HTML)
+                        await asyncio.sleep(300)
+                        await n.delete()
+                        return
+                except Exception as e:
+                    logger.error(f"Verification error in PM: {e}")
+
+            # 3. Send file directly in PM
+            files_ = await get_file_details(file_id)
+            if not files_:
+                return await query.message.reply('<b><i>ɴᴏ ꜱᴜᴄʜ ꜰɪʟᴇ ᴇxɪꜱᴛꜱ !</i></b>')
+            files = files_[0]
+            title = clean_filename(files.file_name)
+            size = get_size(files.file_size)
+            cover = files.cover if files.cover else None
+            f_caption = files.caption
+            settings = await get_settings(int(chat_id))
+            ASH_CAPTION = settings.get('caption', CUSTOM_FILE_CAPTION)
+            if ASH_CAPTION:
+                try:
+                    f_caption = ASH_CAPTION.format(file_name='' if title is None else title, file_size='' if size is None else size, file_caption='' if f_caption is None else f_caption)
+                except Exception as e:
+                    f_caption = f_caption
+            if f_caption is None:
+                f_caption = clean_filename(files.file_name)
+            btn = [[InlineKeyboardButton('📌 ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇꜱ ᴄʜᴀɴɴᴇʟ 📌', url=UPDATE_CHNL_LNK)]]
+            try:
+                msg = await client.send_cached_media(
+                    chat_id=user_id,
+                    file_id=file_id,
+                    cover=cover,
+                    caption=f_caption,
+                    protect_content=settings.get('file_secure', PROTECT_CONTENT),
+                    reply_markup=InlineKeyboardMarkup(btn)
+                )
+                if AUTO_DELETE:
+                    k = await msg.reply(script.DEL_MSG.format(get_time(DELETE_TIME)), quote=True, parse_mode=enums.ParseMode.HTML)
+                    await asyncio.sleep(DELETE_TIME)
+                    await msg.delete()
+                    await k.edit_text("<b>ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!</b>")
+            except Exception as e:
+                logger.exception(f"Error sending cached media in PM: {e}")
+                await query.message.reply(f"<b>⚠️ Error sending file:</b> <code>{e}</code>\n<i>Tip: Bot must be Admin in your DB Channel to send files!</i>")
+            return
+        else:
+            await query.answer(url=f"https://t.me/{temp.U_NAME}?start=file_{query.message.chat.id}_{file_id}")
 
     elif query.data.startswith("sendfiles"):
         clicked = query.from_user.id
