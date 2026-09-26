@@ -111,6 +111,20 @@ async def custom_send_cached_media(
             pass
 
         media = utils.get_input_media_from_file_id(file_id)
+        
+        # Attach file_reference from DB if missing in compact file_id
+        try:
+            target_obj = getattr(media, "id", None) or media
+            if hasattr(target_obj, "file_reference") and not target_obj.file_reference:
+                import base64
+                from database.ia_filterdb import get_file_details
+                f_det = await get_file_details(file_id)
+                if f_det and getattr(f_det[0], 'file_ref', None):
+                    ref_str = f_det[0].file_ref
+                    target_obj.file_reference = base64.urlsafe_b64decode(ref_str + "=" * (-len(ref_str) % 4))
+        except Exception as e:
+            log.warning(f"Error attaching file_reference in custom_send_cached_media: {e}")
+
         if vidcover_file is not None:
             try:
                 media.video_cover = vidcover_file
@@ -276,6 +290,17 @@ async def custom_send_video(
                     )
                 else:
                     media = utils.get_input_media_from_file_id(video, FileType.VIDEO, ttl_seconds=(1 << 31) - 1 if view_once else ttl_seconds)
+                    try:
+                        target_obj = getattr(media, "id", None) or media
+                        if hasattr(target_obj, "file_reference") and not target_obj.file_reference:
+                            import base64
+                            from database.ia_filterdb import get_file_details
+                            f_det = await get_file_details(video)
+                            if f_det and getattr(f_det[0], 'file_ref', None):
+                                ref_str = f_det[0].file_ref
+                                target_obj.file_reference = base64.urlsafe_b64decode(ref_str + "=" * (-len(ref_str) % 4))
+                    except Exception as e:
+                        log.warning(f"Error attaching file_reference in custom_send_video: {e}")
                     if vidcover_file is not None:
                         try:
                             media.video_cover = vidcover_file
